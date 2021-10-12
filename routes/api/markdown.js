@@ -43,4 +43,25 @@ router.put('/:markdown_id', async (req, res) => {
   }
 });
 
+router.post('/', async (req, res) => {
+  try {
+
+    // Create markdown file
+    console.log(req.body);
+
+    let dir = exec("npm run build-client-bo", function(err, stdout, stderr) {
+      if (err) {
+        console.log(err);
+      }
+      console.log(stdout);
+    });
+
+    dir.on('exit', function (code) {
+      res.status(200).json({ success: true });
+    });
+  } catch (error) {
+    res.status(400).json({ msg: e.message });
+  }
+});
+
 module.exports = router;

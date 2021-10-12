@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 // const cors = require("cors");
 
 const markdown = require("./routes/api/markdown");
+const release = require("./routes/api/release");
 
 const app = express();
 
@@ -26,6 +27,7 @@ if (process.argv[2] === 'backoffice') {
 
   // Set API routes
   app.use('/api/markdown', markdown);
+  app.use('/api/release', release);
   app.use('/markdowns', express.static(`markdowns`));
 } else {
   PORT = 8082;

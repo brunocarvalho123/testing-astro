@@ -39,16 +39,57 @@ const { title, description, permalink } = Astro.props;
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;700&display=swap">
 
 <style>
-  #save-button {
+  .global-button {
     position: fixed;
-    top: 85%;
-    left: 90%;
     width: 100px;
     height: 50px;
+  }
+  #new-article-button {
+    top: 79%;
+    left: 90%;
+    display: none;
+  }
+  #preview-button {
+    top: 85%;
+    left: 90%;
+    display: none;
+  }
+  #release-button {
+    top: 91%;
+    left: 90%;
     display: none;
   }
 </style>
 
-<button id="save-button" onclick="saveData()">Gravar</button>
+<button id="new-article-button" class="global-button" onclick="showFormOverlay()">Novo artigo</button>
+
+<button id="preview-button" class="global-button" onclick="preview()">Gravar</button>
+
+<button id="release-button" class="global-button" onclick="release()">Lançar</button>
 
 <script src="/js/client-backoffice-stuff.fjs"></script>
+
+<div id="spinner-overlay" class="overlay">
+  <div class="lds-ring center-ring"><div></div><div></div><div></div><div></div></div>
+</div>
+
+<div id="form-overlay" class="overlay">
+  <div id="newArticle" class="form-container">
+    <h1>Criar novo artigo para o blog</h1>
+
+    <label for="id"><b>Identificador</b></label>
+    <input id="form-id" type="text" placeholder="Identificador" name="id" required>
+
+    <label for="title"><b>Titulo</b></label>
+    <input id="form-tittle" type="text" placeholder="Titulo do artigo" name="title" required>
+
+    <label for="description"><b>Descrição</b></label>
+    <input id="form-description" type="text" placeholder="Breve descrição do artigo" name="description" required>
+
+    <label for="author"><b>Autor</b></label>
+    <input id="form-author" type="text" placeholder="Autor" name="author" required>
+
+    <button type="submit" class="btn" onclick="creatArticle()">Criar</button>
+    <button type="button" class="btn cancel" onclick="hideFormOverlay()">Fechar</button>
+  </div>
+</div>

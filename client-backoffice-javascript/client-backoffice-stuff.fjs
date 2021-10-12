@@ -1,5 +1,8 @@
 var somethingChanged = false;
 
+document.getElementById('new-article-button').style = "display: block";
+document.getElementById('release-button').style = "display: block";
+
 document.addEventListener('click', (event) => {
   event.composedPath().forEach(async (element) => {
     try {
@@ -32,7 +35,7 @@ document.addEventListener('click', (event) => {
               element.dataset.md = editor.getMarkdown()
               if (!somethingChanged) {
                 somethingChanged = true;
-                document.getElementById('save-button').style = "display: block";
+                document.getElementById('preview-button').style.display = "block";
               }
             }
           }
@@ -44,7 +47,7 @@ document.addEventListener('click', (event) => {
   });
 });
 
-function saveData () {
+function preview () {
   document.querySelectorAll('[editable]').forEach(element => {
     if (element.dataset.md && element.getAttribute('editable') !== '') {
       const xhr = new XMLHttpRequest();
@@ -64,8 +67,68 @@ function saveData () {
           id: element.getAttribute('editable'),
           markdown: element.dataset.md
       }));
-
-      console.log(element.dataset.md);
+      showSpinnerOverlay();
     }
   });
+}
+
+function release () {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", '/api/release/');
+  xhr.onload = function () {
+    if (xhr.readyState == 4 && xhr.status == "200") {
+      console.log('release');
+      hideSpinnerOverlay();
+    } else {
+      console.error(xhr);
+    }
+  }
+  xhr.send();
+  showSpinnerOverlay();
+}
+
+function creatArticle () {
+  hideFormOverlay();
+
+  let data = {};
+  data.id = document.getElementById("form-id").value;
+  data.title = document.getElementById("form-tittle").value;
+  data.description = document.getElementById("form-description").value;
+  data.author = document.getElementById("form-author").value;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/markdown/", true);
+  xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+  xhr.onload = function () {
+    if (xhr.status != 200) {
+      console.log("SERVER ERROR");
+    } else {
+      if (xhr.readyState == 4 && xhr.status == "200") {
+        console.log('reloading');
+        location.reload();
+      } else {
+        console.log("FAILURE!");
+      }
+    }
+  };
+  xhr.send(JSON.stringify(data));
+  showSpinnerOverlay();
+
+  return false;
+}
+
+function showSpinnerOverlay () {
+  document.getElementById('spinner-overlay').style.display = "flex";
+}
+
+function hideSpinnerOverlay () {
+  document.getElementById('spinner-overlay').style.display = "none";
+}
+
+function showFormOverlay () {
+  document.getElementById('form-overlay').style.display = "flex";
+}
+
+function hideFormOverlay () {
+  document.getElementById('form-overlay').style.display = "none";
 }
