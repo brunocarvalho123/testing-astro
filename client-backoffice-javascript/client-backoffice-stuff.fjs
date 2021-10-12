@@ -1,0 +1,71 @@
+var somethingChanged = false;
+
+document.addEventListener('click', (event) => {
+  event.composedPath().forEach(async (element) => {
+    try {
+      if (element.hasAttribute('editable') && !element.dataset.hasmd) {
+
+        let markdown;
+
+        if (element.getAttribute('editable') !== '') {
+          const url = `/markdowns/${element.getAttribute('editable')}.md`;
+          try {
+            const response = await fetch(url);
+            if (response.status === 200) {
+              markdown = await response.text();
+              markdown = markdown.split('\n---')[1];
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        }
+
+        const editor = new toastui.Editor({
+          el: element,
+          height: Math.max(element.offsetHeight, 300) + 'px',
+          initialEditType: 'markdown',
+          previewStyle: 'tab',
+          usageStatistics: false,
+          initialValue: markdown,
+          events: {
+            change: function(event) {
+              element.dataset.md = editor.getMarkdown()
+              if (!somethingChanged) {
+                somethingChanged = true;
+                document.getElementById('save-button').style = "display: block";
+              }
+            }
+          }
+        });
+
+        element.dataset.hasmd = 'true';
+      }
+    } catch (error) {}
+  });
+});
+
+function saveData () {
+  document.querySelectorAll('[editable]').forEach(element => {
+    if (element.dataset.md && element.getAttribute('editable') !== '') {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", `/api/markdown/${element.getAttribute('editable').replace('/','_')}`, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      xhr.onload = function () {
+        if (xhr.readyState == 4 && xhr.status == "200") {
+          console.log('reloading');
+          location.reload();
+        } else {
+          console.error(xhr);
+        }
+      }
+
+      xhr.send(JSON.stringify({
+          id: element.getAttribute('editable'),
+          markdown: element.dataset.md
+      }));
+
+      console.log(element.dataset.md);
+    }
+  });
+}

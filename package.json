@@ -1,0 +1,18 @@
+{
+  "name": "testing-astro",
+  "version": "0.0.1",
+  "main": "server.js",
+  "scripts": {
+    "start-bo": "node server.js backoffice",
+    "start-public": "node server.js public",
+    "server": "node server.js",
+    "install-client": "cd client && npm install",
+    "build-client-public": "touch client/public/js/client-backoffice-stuff.fjs && rm client/public/js/client-backoffice-stuff.fjs && rm -rf client/src/pages/markdowns && cp -R markdowns client/src/pages/ && cd client && npm run build-public",
+    "build-client-bo": "cp client-backoffice-javascript/client-backoffice-stuff.fjs client/public/js/ && rm -rf client/src/pages/markdowns && cp -R markdowns client/src/pages/ && cd client && npm run build-backoffice"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
