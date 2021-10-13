@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 
 const markdown = require("./routes/api/markdown");
 const release = require("./routes/api/release");
+const upload = require("./routes/api/upload");
 
 const app = express();
 
@@ -26,6 +27,7 @@ if (process.argv[2] === 'backoffice') {
   clientMode = 'dist-bo';
 
   // Set API routes
+  app.use('/api/upload', upload);
   app.use('/api/markdown', markdown);
   app.use('/api/release', release);
   app.use('/markdowns', express.static(`markdowns`));
@@ -36,6 +38,7 @@ if (process.argv[2] === 'backoffice') {
 
 // Set static folder
 app.use(express.static(`client/${clientMode}`));
+app.use('/uploads', express.static('uploads'));
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client', clientMode, 'index.html'));

@@ -48,6 +48,21 @@ router.post('/', async (req, res) => {
 
     // Create markdown file
     console.log(req.body);
+    const mdFile = `./markdowns/${(req.body.id).replace('_','/')}.md`;
+    const mdFinal =
+`---
+title: '${req.body.title}'
+description: '${req.body.description}'
+author: '${req.body.author}'
+authorLink: 'https://www.google.pt'
+publishDate: ${(new Date).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+layout: '../../../layouts/BlogPost.astro'
+heroImage: '${req.body.image}'
+path: '${(req.body.id).replace('_','/')}'
+---
+Texto do artigo`;
+
+    fs.writeFileSync(mdFile, mdFinal);
 
     let dir = exec("npm run build-client-bo", function(err, stdout, stderr) {
       if (err) {
@@ -59,7 +74,7 @@ router.post('/', async (req, res) => {
     dir.on('exit', function (code) {
       res.status(200).json({ success: true });
     });
-  } catch (error) {
+  } catch (e) {
     res.status(400).json({ msg: e.message });
   }
 });

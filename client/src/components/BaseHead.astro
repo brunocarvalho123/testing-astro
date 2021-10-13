@@ -59,6 +59,9 @@ const { title, description, permalink } = Astro.props;
     left: 90%;
     display: none;
   }
+  #form-image {
+    padding: 10px;
+  }
 </style>
 
 <button id="new-article-button" class="global-button" onclick="showFormOverlay()">Novo artigo</button>
@@ -88,6 +91,9 @@ const { title, description, permalink } = Astro.props;
 
     <label for="author"><b>Autor</b></label>
     <input id="form-author" type="text" placeholder="Autor" name="author" required>
+
+    <label for="filename"><b>Imagem</b></label><br>
+    <input id="form-image" type="file" name="filename">
 
     <button type="submit" class="btn" onclick="creatArticle()">Criar</button>
     <button type="button" class="btn cancel" onclick="hideFormOverlay()">Fechar</button>

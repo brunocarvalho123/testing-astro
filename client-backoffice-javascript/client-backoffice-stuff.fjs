@@ -87,7 +87,7 @@ function release () {
   showSpinnerOverlay();
 }
 
-function creatArticle () {
+async function creatArticle () {
   hideFormOverlay();
 
   let data = {};
@@ -96,24 +96,45 @@ function creatArticle () {
   data.description = document.getElementById("form-description").value;
   data.author = document.getElementById("form-author").value;
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/api/markdown/", true);
-  xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-  xhr.onload = function () {
-    if (xhr.status != 200) {
-      console.log("SERVER ERROR");
-    } else {
-      if (xhr.readyState == 4 && xhr.status == "200") {
-        console.log('reloading');
-        location.reload();
-      } else {
-        console.log("FAILURE!");
-      }
-    }
-  };
-  xhr.send(JSON.stringify(data));
-  showSpinnerOverlay();
+  const image = document.getElementById("form-image").files[0];
 
+  if (image) {
+    data.image = `/uploads/${image.name}`;
+    let formData = new FormData();
+    formData.append("image", image);
+
+    try {
+      const uploadResponse = await fetch("/api/upload/", { method: 'POST', body: formData });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // const xhr = new XMLHttpRequest();
+  // xhr.open("POST", "/api/markdown/", true);
+  // xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+  // xhr.onload = function () {
+  //   if (xhr.status != 200) {
+  //     console.log("SERVER ERROR");
+  //   } else {
+  //     if (xhr.readyState == 4 && xhr.status == "200") {
+  //       console.log('reloading');
+  //       location.reload();
+  //     } else {
+  //       console.log("FAILURE!");
+  //     }
+  //   }
+  // };
+  // xhr.send(JSON.stringify(data));
+
+  try {
+    showSpinnerOverlay();
+    const postResponse = await fetch("/api/markdown/", { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    console.log('reloading');
+    location.reload();
+  } catch (error) {
+    console.log(error);
+  }
   return false;
 }
 
