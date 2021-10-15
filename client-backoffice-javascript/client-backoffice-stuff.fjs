@@ -1,38 +1,48 @@
 var somethingChanged = false;
+var editorOpen = false;
+var editor = {};
 
 document.getElementById('new-article-button').style = "display: block";
 document.getElementById('release-button').style = "display: block";
 
 document.addEventListener('click', (event) => {
+  let outsideEditor = true;
   event.composedPath().forEach(async (element) => {
     try {
-      if (element.hasAttribute('editable') && !element.dataset.hasmd) {
+      if (element.dataset.hasmd === 'true') outsideEditor = false;
+
+      if (element.hasAttribute('editable') && element.dataset.hasmd !== 'true' && !editorOpen) {
 
         let markdown;
 
         if (element.getAttribute('editable') !== '') {
-          const url = `/markdowns/${element.getAttribute('editable')}.md`;
-          try {
-            const response = await fetch(url);
-            if (response.status === 200) {
-              markdown = await response.text();
-              markdown = markdown.split('\n---')[1];
+          if (element.dataset.md && element.dataset.md.length > 0) {
+            markdown = element.dataset.md;
+          } else {
+            const url = `/markdowns/${element.getAttribute('editable')}.md`;
+            try {
+              const response = await fetch(url);
+              if (response.status === 200) {
+                markdown = await response.text();
+                markdown = markdown.split('\n---')[1];
+              }
+            } catch (error) {
+              console.error(error);
             }
-          } catch (error) {
-            console.log(error);
           }
         }
 
-        const editor = new toastui.Editor({
+        editor = new toastui.Editor({
           el: element,
-          height: Math.max(element.offsetHeight, 300) + 'px',
+          height: Math.max(element.offsetHeight, 450) + 'px',
           initialEditType: 'markdown',
           previewStyle: 'tab',
           usageStatistics: false,
           initialValue: markdown,
+          language: 'pt-PT',
           events: {
             change: function(event) {
-              element.dataset.md = editor.getMarkdown()
+              element.dataset.md = editor.getMarkdown();
               if (!somethingChanged) {
                 somethingChanged = true;
                 document.getElementById('preview-button').style.display = "block";
@@ -42,49 +52,66 @@ document.addEventListener('click', (event) => {
         });
 
         element.dataset.hasmd = 'true';
+        outsideEditor = false;
+        editorOpen = true;
       }
     } catch (error) {}
   });
+
+  if (editorOpen && outsideEditor) {
+    document.querySelectorAll('[editable]').forEach(element => {
+      if (element.getAttribute('editable') !== '' && element.dataset.hasmd) {
+        console.log('closing editor');
+
+        // Remove editor
+        element.removeChild(element.firstElementChild);
+
+        // Remove preview class
+        editor.preview.previewContent.classList.remove('toastui-editor-contents')
+
+        // Append new child
+        element.style = '';
+        element.appendChild(editor.preview.previewContent);
+        element.dataset.hasmd = 'false';
+        editorOpen = false;
+      }
+    });
+  }
 });
 
 function preview () {
-  document.querySelectorAll('[editable]').forEach(element => {
+  document.querySelectorAll('[editable]').forEach(async (element) => {
     if (element.dataset.md && element.getAttribute('editable') !== '') {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", `/api/markdown/${element.getAttribute('editable').replace('/','_')}`, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-
-      xhr.onload = function () {
-        if (xhr.readyState == 4 && xhr.status == "200") {
-          console.log('reloading');
-          location.reload();
-        } else {
-          console.error(xhr);
-        }
+      try {
+        showSpinnerOverlay();
+        const putResponse = await fetch(`/api/markdown/${element.getAttribute('editable').replace('/','_')}`,
+                                        {
+                                          method: 'PUT',
+                                          headers: {'Content-Type': 'application/json'},
+                                          body: JSON.stringify(
+                                            {
+                                              id: element.getAttribute('editable'),
+                                              markdown: element.dataset.md
+                                            })
+                                        });
+        console.log('reloading');
+        location.reload();
+      } catch (error) {
+        console.log(error);
       }
-
-      xhr.send(JSON.stringify({
-          id: element.getAttribute('editable'),
-          markdown: element.dataset.md
-      }));
-      showSpinnerOverlay();
     }
   });
 }
 
-function release () {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", '/api/release/');
-  xhr.onload = function () {
-    if (xhr.readyState == 4 && xhr.status == "200") {
-      console.log('release');
-      hideSpinnerOverlay();
-    } else {
-      console.error(xhr);
-    }
+async function release () {
+  try {
+    showSpinnerOverlay();
+    await fetch('/api/release/', {method: 'GET'});
+    console.log('release');
+    hideSpinnerOverlay();
+  } catch (error) {
+    console.log(error);
   }
-  xhr.send();
-  showSpinnerOverlay();
 }
 
 async function creatArticle () {
@@ -109,23 +136,6 @@ async function creatArticle () {
       console.log(error);
     }
   }
-
-  // const xhr = new XMLHttpRequest();
-  // xhr.open("POST", "/api/markdown/", true);
-  // xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-  // xhr.onload = function () {
-  //   if (xhr.status != 200) {
-  //     console.log("SERVER ERROR");
-  //   } else {
-  //     if (xhr.readyState == 4 && xhr.status == "200") {
-  //       console.log('reloading');
-  //       location.reload();
-  //     } else {
-  //       console.log("FAILURE!");
-  //     }
-  //   }
-  // };
-  // xhr.send(JSON.stringify(data));
 
   try {
     showSpinnerOverlay();
