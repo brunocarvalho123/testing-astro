@@ -20,10 +20,10 @@ const { title, author, authorLink, publishDate, heroImage, alt, path } = Astro.p
     <header>
       {heroImage && <img width="720" height="420" class="hero-image" loading="lazy" src={heroImage} alt={alt} />}
       <p class="publish-date">{publishDate}</p>
-      <h1 class="title">{title}</h1>
+      <h1 mdid={'posts__'+path} prop="title" contenteditable="false" class="title">{title}</h1>
       <Author name={author} href={authorLink} />
     </header>
-    <main editable={path}>
+    <main editable={'posts__'+path}>
       <slot />
     </main>
   </div>

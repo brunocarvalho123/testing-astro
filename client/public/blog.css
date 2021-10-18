@@ -303,6 +303,11 @@ blockquote .source {
   background-color: #d6d6d6;
 }
 
+[contenteditable='true']:hover {
+  cursor: pointer;
+  background-color: #d6d6d6;
+}
+
 .overlay {
   position: fixed;
   justify-content: center;

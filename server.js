@@ -1,8 +1,8 @@
 const express = require("express");
 const http = require("http");
 const bodyParser = require("body-parser");
-// const cors = require("cors");
 
+const properties = require("./routes/api/properties");
 const markdown = require("./routes/api/markdown");
 const release = require("./routes/api/release");
 const upload = require("./routes/api/upload");
@@ -26,10 +26,11 @@ if (process.argv[2] === 'backoffice') {
   PORT = 8081;
   clientMode = 'dist-bo';
 
-  // Set API routes
+  // Set API routes for backoffice only
   app.use('/api/upload', upload);
-  app.use('/api/markdown', markdown);
   app.use('/api/release', release);
+  app.use('/api/markdown', markdown);
+  app.use('/api/properties', properties);
   app.use('/markdowns', express.static(`markdowns`));
 } else {
   PORT = 8082;

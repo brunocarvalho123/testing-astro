@@ -7,10 +7,19 @@ const exec = require('child_process').exec;
  * @route   GET api/release/
  * @access  Public
  */
-router.get('/', (req, res) => {
+router.get('/:action', (req, res) => {
   try {
-    console.log('building public');
-    let dir = exec("npm run build-client-public", function(err, stdout, stderr) {
+    let action = '';
+    if (req.params.action === 'public') {
+      action = 'public';
+    } else if (req.params.action === 'backoffice') {
+      action = 'bo';
+    } else {
+      throw Error('Invalid action');
+    }
+
+    console.log(`building ${action}`);
+    let dir = exec(`npm run build-client-${action}`, function(err, stdout, stderr) {
       if (err) {
         console.log(err);
       }

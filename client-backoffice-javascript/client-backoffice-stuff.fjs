@@ -1,9 +1,9 @@
-var somethingChanged = false;
 var editorOpen = false;
 var editor = {};
 
-document.getElementById('new-article-button').style = "display: block";
-document.getElementById('release-button').style = "display: block";
+document.getElementById('new-article-button').style.display = "block";
+document.getElementById('preview-button').style.display = "block";
+document.getElementById('release-button').style.display = "block";
 
 document.addEventListener('click', (event) => {
   let outsideEditor = true;
@@ -19,7 +19,7 @@ document.addEventListener('click', (event) => {
           if (element.dataset.md && element.dataset.md.length > 0) {
             markdown = element.dataset.md;
           } else {
-            const url = `/markdowns/${element.getAttribute('editable')}.md`;
+            const url = `/markdowns/${element.getAttribute('editable').replace('__','/')}.md`;
             try {
               const response = await fetch(url);
               if (response.status === 200) {
@@ -43,10 +43,6 @@ document.addEventListener('click', (event) => {
           events: {
             change: function(event) {
               element.dataset.md = editor.getMarkdown();
-              if (!somethingChanged) {
-                somethingChanged = true;
-                document.getElementById('preview-button').style.display = "block";
-              }
             }
           }
         });
@@ -79,35 +75,82 @@ document.addEventListener('click', (event) => {
   }
 });
 
-function preview () {
-  document.querySelectorAll('[editable]').forEach(async (element) => {
-    if (element.dataset.md && element.getAttribute('editable') !== '') {
+setTimeout(() => {
+  document.querySelectorAll('[contenteditable]').forEach(element => {
+    element.setAttribute('contenteditable','true');
+  });
+}, 0);
+
+async function preview () {
+  showSpinnerOverlay();
+
+  const contenteditableElements = document.querySelectorAll('[contenteditable]');
+  const editableElements = document.querySelectorAll('[editable]');
+
+  for (let idx = 0; idx < contenteditableElements.length; idx++) {
+    const element = contenteditableElements[idx];
+    const prop = element.getAttribute('prop');
+    const mdid = element.getAttribute('mdid');
+    if (prop && mdid) {
       try {
-        showSpinnerOverlay();
-        const putResponse = await fetch(`/api/markdown/${element.getAttribute('editable').replace('/','_')}`,
-                                        {
-                                          method: 'PUT',
-                                          headers: {'Content-Type': 'application/json'},
-                                          body: JSON.stringify(
-                                            {
-                                              id: element.getAttribute('editable'),
-                                              markdown: element.dataset.md
-                                            })
-                                        });
-        console.log('reloading');
-        location.reload();
+        const patchResponse = await fetch(`/api/properties/${mdid}`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(
+            {
+              prop: prop,
+              text: element.innerText
+            })
+          }
+        );
       } catch (error) {
         console.log(error);
       }
     }
-  });
+  }
+
+  for (let idx = 0; idx < editableElements.length; idx++) {
+    const element = editableElements[idx];
+    if (element.dataset.md && element.getAttribute('editable') !== '') {
+      try {
+        const patchResponse = await fetch(`/api/markdown/${element.getAttribute('editable')}`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(
+            {
+              id: element.getAttribute('editable'),
+              markdown: element.dataset.md
+            })
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  await releaseBackoffice();
+
+  console.log('reloading');
+  location.reload();
 }
 
-async function release () {
+async function releaseBackoffice () {
   try {
     showSpinnerOverlay();
-    await fetch('/api/release/', {method: 'GET'});
-    console.log('release');
+    await fetch('/api/release/backoffice', {method: 'GET'});
+    console.log('release bo');
+    hideSpinnerOverlay();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function releasePublic () {
+  try {
+    showSpinnerOverlay();
+    await fetch('/api/release/public', {method: 'GET'});
+    console.log('release public');
     hideSpinnerOverlay();
   } catch (error) {
     console.log(error);
@@ -118,7 +161,7 @@ async function creatArticle () {
   hideFormOverlay();
 
   let data = {};
-  data.id = document.getElementById("form-id").value;
+  data.id = 'posts_' + document.getElementById("form-id").value;
   data.title = document.getElementById("form-tittle").value;
   data.description = document.getElementById("form-description").value;
   data.author = document.getElementById("form-author").value;
@@ -140,6 +183,7 @@ async function creatArticle () {
   try {
     showSpinnerOverlay();
     const postResponse = await fetch("/api/markdown/", { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    await releaseBackoffice();
     console.log('reloading');
     location.reload();
   } catch (error) {
