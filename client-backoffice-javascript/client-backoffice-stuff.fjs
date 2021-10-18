@@ -131,7 +131,6 @@ async function preview () {
 
   await releaseBackoffice();
 
-  console.log('reloading');
   location.reload();
 }
 
@@ -161,7 +160,7 @@ async function creatArticle () {
   hideFormOverlay();
 
   let data = {};
-  data.id = 'posts_' + document.getElementById("form-id").value;
+  data.id = 'posts__' + document.getElementById("form-id").value;
   data.title = document.getElementById("form-tittle").value;
   data.description = document.getElementById("form-description").value;
   data.author = document.getElementById("form-author").value;
@@ -184,7 +183,7 @@ async function creatArticle () {
     showSpinnerOverlay();
     const postResponse = await fetch("/api/markdown/", { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
     await releaseBackoffice();
-    console.log('reloading');
+
     location.reload();
   } catch (error) {
     console.log(error);

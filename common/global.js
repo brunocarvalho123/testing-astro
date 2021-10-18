@@ -6,8 +6,6 @@ Global.getMdProperties = (rawMd) => {
   let mdHeader = rawMd.split('\n---')[0];
   mdHeader = mdHeader.split('---\n')[1];
 
-  console.log(mdHeader);
-
   mdHeader.split('\n').forEach(prop => {
     properties[prop.split(':')[0]] = prop.match(/.*:.*'(.*)'/i)[1];
   });

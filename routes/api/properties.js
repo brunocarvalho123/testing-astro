@@ -13,7 +13,7 @@ router.patch('/:markdown_id', async (req, res) => {
 
     properties = global.getMdProperties(mdRaw);
 
-    properties[req.body.prop] = req.body.text;
+    properties[req.body.prop] = req.body.text.replace(/'/g,"''").replace(/\n/g,'<br />');
 
     let mdFinal = global.toMdProperties(properties) + '\n' + mdBody;
 

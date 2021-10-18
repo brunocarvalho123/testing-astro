@@ -4,25 +4,17 @@ import BaseHead from '../components/BaseHead.astro';
 import BlogHeader from '../components/BlogHeader.astro';
 import BlogPostPreview from '../components/BlogPostPreview.astro';
 
-interface MarkdownFrontmatter {
-  publishDate: number;
-}
 
-// Component Script:
-// You can write any JavaScript/TypeScript that you'd like here.
-// It will run during the build, but never in the browser.
-// All variables are available to use in the HTML template below.
 let title = 'Example Blog';
 let description = 'The perfect starter for your perfect blog.';
 let permalink = 'https://example.com/';
 
-// Data Fetching: List all Markdown posts in the repo.
-
-let allPosts = Astro.fetchContent<MarkdownFrontmatter>('./markdowns/posts/*.md');
+const allMDs = Astro.fetchContent('./markdowns/*/*.md');
+let allPosts = allMDs.filter(md => md.url.startsWith('/markdowns/posts'));
 allPosts = allPosts.sort((a, b) => new Date(b.publishDate).valueOf() - new Date(a.publishDate).valueOf());
 
-// Full Astro Component Syntax:
-// https://docs.astro.build/core-concepts/astro-components/
+const indexProps = allMDs.filter(post => post.url.startsWith('/markdowns/other/index-props'))[0];
+
 ---
 <html lang="en">
   <head>
@@ -79,8 +71,8 @@ allPosts = allPosts.sort((a, b) => new Date(b.publishDate).valueOf() - new Date(
       <article class="content">
         <section class="intro">
           <div id="section-intro">
-            <h1 id="title" contenteditable="false" class="latest">{title}</h1>
-            <p id="description" contenteditable="false">{description}</p>
+            <h1 id="title" mdid="other__index-props" prop="title" contenteditable="false" class="latest">{indexProps.title}</h1>
+            <p id="description" mdid="other__index-props" prop="description" contenteditable="false">{indexProps.description}</p>
           </div>
         </section>
         <section>
