@@ -4,6 +4,8 @@ import BaseHead from '../components/BaseHead.astro';
 import BlogHeader from '../components/BlogHeader.astro';
 import BlogPostPreview from '../components/BlogPostPreview.astro';
 
+import '../components/lit/lit-icon.js';
+
 
 let title = 'Example Blog';
 let description = 'The perfect starter for your perfect blog.';
@@ -73,6 +75,7 @@ const indexProps = allMDs.filter(post => post.url.startsWith('/markdowns/other/i
           <div id="section-intro">
             <h1 id="title" mdid="other__index-props" prop="title" contenteditable="false" class="latest">{indexProps.title}</h1>
             <p id="description" mdid="other__index-props" prop="description" contenteditable="false">{indexProps.description}</p>
+            <lit-icon icon="cog"></lit-icon>
           </div>
         </section>
         <section>
