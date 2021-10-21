@@ -1,0 +1,44 @@
+---
+import { Markdown } from 'astro/components';
+import BaseHead from '../components/BaseHead.astro';
+import BlogHeader from '../components/BlogHeader.astro';
+import TestComponent from '../components/TestComponent.astro';
+import '../components/lit/lit-icon.js';
+
+const {content} = Astro.props;
+const {title, description, publishDate, author, authorLink, heroImage, permalink, alt, path} = content;
+---
+<html lang={ content.lang || 'en' }>
+  <head>
+    <BaseHead title={title} description={description} permalink={permalink} />
+    <link rel="stylesheet" href="/blog.css" />
+  </head>
+
+  <style>
+    body {
+      display: block !important;
+    }
+    .button-div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+
+  <body>
+    <BlogHeader />
+    <h3 mdid={'infos__'+path} prop="title" contenteditable="false">{title}</h3>
+    <p mdid={'infos__'+path} prop="description" contenteditable="false">{description}</p>
+
+    <div id="slotdiv">
+      <slot />
+    </div>
+
+    <div class="button-div">
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('img-left')"><lit-icon icon="plus"></lit-icon></button></div> }
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('img-right')"><lit-icon icon="plus"></lit-icon></button></div> }
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('no-img')"><lit-icon icon="plus"></lit-icon></button></div> }
+    </div>
+  </body>
+</html>
+

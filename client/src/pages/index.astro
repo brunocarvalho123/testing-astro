@@ -18,7 +18,7 @@ allPosts = allPosts.sort((a, b) => new Date(b.publishDate).valueOf() - new Date(
 const indexProps = allMDs.filter(post => post.url.startsWith('/markdowns/other/index-props'))[0];
 
 ---
-<html lang="en">
+<html lang="pt_PT">
   <head>
     <BaseHead title={title} description={description} permalink={permalink} />
     <link rel="stylesheet" href="/blog.css" />
@@ -78,6 +78,7 @@ const indexProps = allMDs.filter(post => post.url.startsWith('/markdowns/other/i
             <lit-icon icon="cog"></lit-icon>
           </div>
         </section>
+
         <section>
           {allPosts.map(p => <BlogPostPreview post={p} />)}
         </section>

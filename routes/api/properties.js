@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const global = require('../../common/global.js');
-const exec = require('child_process').exec;
 
 router.patch('/:markdown_id', async (req, res) => {
   try {
@@ -15,7 +14,7 @@ router.patch('/:markdown_id', async (req, res) => {
 
     properties[req.body.prop] = req.body.text.replace(/'/g,"''").replace(/\n/g,'<br />');
 
-    let mdFinal = global.toMdProperties(properties) + '\n' + mdBody;
+    let mdFinal = global.toMdProperties(properties) + (mdBody[0] !== '\n' ? '\n' : '' ) + mdBody;
 
     fs.writeFileSync(mdFile, mdFinal);
     res.status(200).json({ success: true });

@@ -23,7 +23,7 @@ const { title, author, authorLink, publishDate, heroImage, alt, path } = Astro.p
       <h1 mdid={'posts__'+path} prop="title" contenteditable="false" class="title">{title}</h1>
       <Author name={author} href={authorLink} />
     </header>
-    <main editable={'posts__'+path}>
+    <main>
       <slot />
     </main>
   </div>

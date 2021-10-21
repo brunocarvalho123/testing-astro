@@ -70,7 +70,7 @@ const { title, description, permalink } = Astro.props;
 
 <button id="release-button" class="global-button" onclick="releasePublic()">Publicar</button>
 
-<script src="/js/client-backoffice-stuff.fjs"></script>
+{ process.env.BUILD_MODE === 'backoffice' && <script src="/js/client-backoffice-stuff.fjs"></script> }
 
 <div id="spinner-overlay" class="overlay">
   <div class="lds-ring center-ring"><div></div><div></div><div></div><div></div></div>

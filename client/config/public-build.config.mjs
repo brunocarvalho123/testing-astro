@@ -6,6 +6,7 @@
 // helpful tooltips, and warnings if your exported object is invalid.
 // You can disable this by removing "@ts-check" and `@type` comments below.
 
+process.env.BUILD_MODE = 'public'
 // @ts-check
 export default /** @type {import('astro').AstroUserConfig} */ ({
   // Enable the Preact renderer to support Preact JSX components.
@@ -22,5 +23,5 @@ export default /** @type {import('astro').AstroUserConfig} */ ({
     port: 3123             // The port to run the dev server on.
     // tailwindConfig: '',     // Path to tailwind.config.js if used, e.g. './tailwind.config.js'
   },
-  renderers: ['@astrojs/renderer-preact', '@astrojs/renderer-lit'],
+  renderers: ['@astrojs/renderer-preact', '@astrojs/renderer-lit']
 });

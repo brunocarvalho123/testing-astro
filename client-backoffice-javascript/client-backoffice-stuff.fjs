@@ -91,6 +91,7 @@ async function preview () {
     const element = contenteditableElements[idx];
     const prop = element.getAttribute('prop');
     const mdid = element.getAttribute('mdid');
+    const stripid = element.getAttribute('stripid');
     if (prop && mdid) {
       try {
         const patchResponse = await fetch(`/api/properties/${mdid}`, {
@@ -111,14 +112,16 @@ async function preview () {
 
   for (let idx = 0; idx < editableElements.length; idx++) {
     const element = editableElements[idx];
-    if (element.dataset.md && element.getAttribute('editable') !== '') {
+    const mdid = element.getAttribute('mdid');
+    const stripid = element.getAttribute('stripid');
+    if (element.dataset.md && element.getAttribute('editable') !== null && mdid && stripid) {
       try {
-        const patchResponse = await fetch(`/api/markdown/${element.getAttribute('editable')}`, {
+        const patchResponse = await fetch(`/api/markdown/${mdid}`, {
           method: 'PATCH',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(
             {
-              id: element.getAttribute('editable'),
+              stripid: stripid,
               markdown: element.dataset.md
             })
           }
@@ -132,6 +135,28 @@ async function preview () {
   await releaseBackoffice();
 
   location.reload();
+}
+
+function addStrip (stripType='img-right') {
+  const slotDiv = document.getElementById('slotdiv');
+
+  let template;
+  switch (stripType) {
+    case 'img-left':
+      template = imgLeftStrip();
+      break;
+    case 'img-right':
+      template = imgRightStrip();
+      break;
+    case 'no-img':
+      template = noImgStrip();
+      break;
+    default:
+      break;
+  }
+  if (template) {
+    slotDiv.innerHTML += template;
+  }
 }
 
 async function releaseBackoffice () {
@@ -205,4 +230,40 @@ function showFormOverlay () {
 
 function hideFormOverlay () {
   document.getElementById('form-overlay').style.display = "none";
+}
+
+function imgRightStrip () {
+
+  return `<div stripid="new" class="strip img-right">
+  <div editable>
+
+    <h3>Titulo temporario</h3>
+    <p>Descrição temporaria</p>
+  </div>
+  <img src="/social.jpg"></img>
+</div>
+`;
+}
+function imgLeftStrip () {
+
+  return `<div stripid="new" class="strip img-left">
+  <img src="/social.jpg"></img>
+  <div editable>
+
+    <h3>Titulo temporario</h3>
+    <p>Descrição temporaria</p>
+  </div>
+</div>
+`;
+}
+function noImgStrip () {
+
+  return `<div stripid="new" class="strip no-img">
+  <div editable>
+
+    <h3>Titulo temporario</h3>
+    <p>Descrição temporaria</p>
+  </div>
+</div>
+`;
 }

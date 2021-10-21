@@ -16,8 +16,11 @@ const {title, description, publishDate, author, authorLink, heroImage, permalink
   <body>
     <BlogHeader />
     <BlogPost title={title} author={author} authorLink={authorLink} heroImage={heroImage} publishDate={publishDate} alt={alt} path={path}>
-      <slot />
+      <div id="slotdiv">
+        <slot />
+      </div>
     </BlogPost>
+    { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip()"><lit-icon icon="plus"></lit-icon></button></div> }
   </body>
 </html>
 

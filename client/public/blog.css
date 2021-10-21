@@ -408,3 +408,40 @@ blockquote .source {
 .form-container .btn:hover, .open-button:hover {
   opacity: 1;
 }
+
+.strip {
+  padding: 5vh 10vw 0vh 10vw;
+  display: flex;
+}
+.img-right > * {
+  width: 50%;
+}
+.img-left > * {
+  width: 50%;
+}
+.img-right > img {
+  width: 30%;
+  align-self: flex-start;
+  margin-left: 20%;
+}
+.img-left > img {
+  width: 30%;
+  align-self: flex-start;
+  margin-right: 20%;
+}
+.no-img {
+  display: block;
+}
+.add-strip-button {
+  width: 60px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.add-strip {
+  padding-top: 30px;
+  padding-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
