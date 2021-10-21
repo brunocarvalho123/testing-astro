@@ -12,9 +12,57 @@ router.patch('/:markdown_id', async (req, res) => {
     const mdHeader = mdRaw.split('\n---')[0];
     let mdBody = mdRaw.split('\n---')[1];
 
-    mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n).*\n.*(<\/div>)`), `$1${req.body.markdown}\n$2`);
+    console.log(JSON.stringify(req.body.markdown));
+    mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}\n$3`);
 
     let mdFinal = mdHeader + '\n---' + (mdBody[0] !== '\n' ? '\n' : '' ) + mdBody;
+
+    fs.writeFileSync(mdFile, mdFinal);
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.log(e.message);
+    res.status(400).json({ msg: e.message });
+  }
+});
+
+router.put('/:markdown_id', async (req, res) => {
+  try {
+    const mdFile = `./markdowns/${(req.params.markdown_id).replace('__','/')}.md`;
+    const mdRaw = fs.readFileSync(mdFile, 'utf8');
+
+    let newStrip;
+    let stripid = 0;
+
+    const matches = [...mdRaw.matchAll(/<div stripid="(\d)"/g)];
+
+    matches.forEach(element => {
+      if (+element[1] > stripid) {
+        stripid = +element[1];
+      }
+    });
+
+    if (stripid < 1) {
+      throw Error('Invalid stripid');
+    }
+
+    stripid += 1;
+
+    switch (req.body.type) {
+      case 'img-right':
+        newStrip = imgRightStrip(req.params.markdown_id, stripid, req.body.markdown, req.body.img);
+        break;
+      case 'img-left':
+        newStrip = imgLeftStrip(req.params.markdown_id, stripid, req.body.markdown, req.body.img);
+        break;
+      case 'no-img':
+        newStrip = noImgStrip(req.params.markdown_id, stripid, req.body.markdown);
+        break;
+      default:
+        throw Error('Invalid type');
+        break;
+    }
+
+    let mdFinal = mdRaw + newStrip;
 
     fs.writeFileSync(mdFile, mdFinal);
     res.status(200).json({ success: true });
@@ -54,5 +102,38 @@ Texto do artigo
     res.status(400).json({ msg: e.message });
   }
 });
+
+const imgRightStrip = (mdid, stripid, mdcontent, imgsrc) => {
+  return `
+<div stripid="${stripid}"t" class="strip img-right">
+<div mdid="${mdid}" stripid="md-${stripid}" editable>
+
+${mdcontent}
+</div>
+<img src="${imgsrc}"></img>
+</div>
+`;
+}
+const imgLeftStrip = (mdid, stripid, mdcontent, imgsrc) => {
+  return `
+<div stripid="${stripid}"" class="strip img-left">
+<img src="${imgsrc}"></img>
+<div mdid="${mdid}" stripid="md-${stripid}" editable>
+
+${mdcontent}
+</div>
+</div>
+`;
+}
+const noImgStrip = (mdid, stripid, mdcontent) => {
+  return `
+<div stripid="${stripid}" class="strip no-img">
+<div mdid="${mdid}" stripid="md-${stripid}" editable>
+
+${mdcontent}
+</div>
+</div>
+`;
+}
 
 module.exports = router;

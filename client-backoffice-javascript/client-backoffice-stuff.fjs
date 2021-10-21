@@ -2,7 +2,7 @@ var editorOpen = false;
 var editor = {};
 
 document.getElementById('new-article-button').style.display = "block";
-document.getElementById('preview-button').style.display = "block";
+document.getElementById('save-button').style.display = "block";
 document.getElementById('release-button').style.display = "block";
 
 document.addEventListener('click', (event) => {
@@ -81,11 +81,12 @@ setTimeout(() => {
   });
 }, 0);
 
-async function preview () {
+async function save () {
   showSpinnerOverlay();
 
   const contenteditableElements = document.querySelectorAll('[contenteditable]');
   const editableElements = document.querySelectorAll('[editable]');
+  const newStrips = document.querySelectorAll('[newstrip]');
 
   for (let idx = 0; idx < contenteditableElements.length; idx++) {
     const element = contenteditableElements[idx];
@@ -123,6 +124,29 @@ async function preview () {
             {
               stripid: stripid,
               markdown: element.dataset.md
+            })
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  for (let idx = 0; idx < newStrips.length; idx++) {
+    const element = newStrips[idx];
+    const mdid = document.querySelector('[mdid]').getAttribute('mdid');
+    const mdelement = element.querySelector('[editable]');
+    if (mdelement.dataset.md && mdid) {
+      try {
+        const putResponse = await fetch(`/api/markdown/${mdid}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(
+            {
+              img: '/social.jpg',
+              type: element.getAttribute('newstrip'),
+              markdown: mdelement.dataset.md
             })
           }
         );
@@ -234,7 +258,7 @@ function hideFormOverlay () {
 
 function imgRightStrip () {
 
-  return `<div stripid="new" class="strip img-right">
+  return `<div newstrip="img-right" class="strip img-right">
   <div editable>
 
     <h3>Titulo temporario</h3>
@@ -246,7 +270,7 @@ function imgRightStrip () {
 }
 function imgLeftStrip () {
 
-  return `<div stripid="new" class="strip img-left">
+  return `<div newstrip="img-left" class="strip img-left">
   <img src="/social.jpg"></img>
   <div editable>
 
@@ -258,7 +282,7 @@ function imgLeftStrip () {
 }
 function noImgStrip () {
 
-  return `<div stripid="new" class="strip no-img">
+  return `<div newstrip="no-img" class="strip no-img">
   <div editable>
 
     <h3>Titulo temporario</h3>
