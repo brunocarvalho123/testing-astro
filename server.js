@@ -31,7 +31,6 @@ if (process.argv[2] === 'backoffice') {
   app.use('/api/release', release);
   app.use('/api/markdown', markdown);
   app.use('/api/properties', properties);
-  app.use('/markdowns', express.static(`markdowns`));
 } else {
   PORT = 8082;
   clientMode = 'dist-public';

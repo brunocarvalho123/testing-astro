@@ -12,8 +12,10 @@ const { title, description, permalink } = Astro.props;
 <meta name="viewport" content="width=device-width" />
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-<link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+{ process.env.BUILD_MODE === 'backoffice' && <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script> }
+{ process.env.BUILD_MODE === 'backoffice' && <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" /> }
+{ process.env.BUILD_MODE === 'backoffice' && <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script> }
+{ process.env.BUILD_MODE === 'backoffice' && <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" /> }
 
 <!-- Primary Meta Tags -->
 <title>{title}</title>

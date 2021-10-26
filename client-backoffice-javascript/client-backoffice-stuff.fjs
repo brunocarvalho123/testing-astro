@@ -39,24 +39,25 @@ document.addEventListener('click', (event) => {
 
         let markdown;
 
-        if (element.getAttribute('editable') !== '') {
-          if (element.dataset.md && element.dataset.md.length > 0) {
-            markdown = element.dataset.md;
-          } else {
-            const url = `/markdowns/${element.getAttribute('editable').replace('__','/')}.md`;
-            try {
-              // Request the raw markdown (unusable until we have components in the markdown)
-              const response = await fetch(url);
-              if (response.status === 200) {
-                markdown = await response.text();
-                markdown = markdown.split('\n---')[1];
+        if (element.dataset.md && element.dataset.md.length > 0) {
+          markdown = element.dataset.md;
+        } else if (element.getAttribute('mdid') && element.getAttribute('stripid')) {
+          const url = `/api/markdown/${element.getAttribute('mdid') + '__' + element.getAttribute('stripid')}`;
+          try {
+            // Request the raw markdown
+            const response = await fetch(url, {method: 'GET', headers: {'Content-Type': 'application/json'}});
+            if (response.status === 200) {
+              markdown = JSON.parse(await response.text());
+              if (markdown.success) {
+                markdown = markdown.markdown;
               }
-            } catch (error) {
-              console.error(error);
             }
+          } catch (error) {
+            console.error(error);
           }
         }
 
+        // If we don't have the initial value toastui tries to parse the html to markdown
         editor = new toastui.Editor({
           el: element,
           height: Math.max(element.offsetHeight, 450) + 'px',
@@ -85,7 +86,30 @@ setTimeout(() => {
   document.querySelectorAll('[contenteditable]').forEach(element => {
     element.setAttribute('contenteditable','true');
   });
+  setDropzones();
 }, 0);
+
+function setDropzones () {
+  document.querySelectorAll('[editableimg]').forEach(element => { 
+    const hasdropzone = element.getAttribute("hasdropzone");
+    if (hasdropzone !== 'true') {
+      const myDropzone = new Dropzone(element, { url: "/api/upload/" });
+
+      // myDropzone.on("sending", function(file, xhr, formData) {
+      //   formData.append("mdid", mdid);
+      //   formData.append("stripid", stripid);
+      // });
+
+      myDropzone.on("complete", function(file) {
+        const response = JSON.parse(file.xhr.response);
+        element.src = response.path;
+        element.setAttribute('imgchanged', "true");
+      });
+      element.classList.add('dropzone-div');
+      element.setAttribute('hasdropzone', "true");
+    }
+  });
+}
 
 async function save () {
   showSpinnerOverlay();
@@ -93,6 +117,7 @@ async function save () {
   const contenteditableElements = document.querySelectorAll('[contenteditable]');
   const editableElements = document.querySelectorAll('[editable]');
   const newStrips = document.querySelectorAll('[newstrip]');
+  const images = document.querySelectorAll('[imgchanged]');
 
   for (let idx = 0; idx < contenteditableElements.length; idx++) {
     const element = contenteditableElements[idx];
@@ -143,6 +168,11 @@ async function save () {
     const element = newStrips[idx];
     const mdid = document.querySelector('[mdid]').getAttribute('mdid');
     const mdelement = element.querySelector('[editable]');
+    const imgelement = element.querySelector('[imgchanged]');
+
+    let img = '/social.jpg';
+    if (imgelement.src !== '') img = imgelement.src;
+    
     if (mdelement.dataset.md && mdid) {
       try {
         const putResponse = await fetch(`/api/markdown/${mdid}`, {
@@ -150,7 +180,7 @@ async function save () {
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(
             {
-              img: '/social.jpg',
+              img: img,
               type: element.getAttribute('newstrip'),
               markdown: mdelement.dataset.md
             })
@@ -186,6 +216,7 @@ function addStrip (stripType='img-right') {
   }
   if (template) {
     slotDiv.innerHTML += template;
+    setDropzones();
   }
 }
 
@@ -225,7 +256,7 @@ async function creatArticle () {
   if (image) {
     data.image = `/uploads/${image.name}`;
     let formData = new FormData();
-    formData.append("image", image);
+    formData.append("file", image);
 
     try {
       const uploadResponse = await fetch("/api/upload/", { method: 'POST', body: formData });
@@ -270,14 +301,14 @@ function imgRightStrip () {
     <h3>Titulo temporario</h3>
     <p>Descrição temporaria</p>
   </div>
-  <img src="/social.jpg"></img>
+  <img editableimg src="/social.jpg"></img>
 </div>
 `;
 }
 function imgLeftStrip () {
 
   return `<div newstrip="img-left" class="strip img-left">
-  <img src="/social.jpg"></img>
+  <img editableimg src="/social.jpg"></img>
   <div editable>
 
     <h3>Titulo temporario</h3>

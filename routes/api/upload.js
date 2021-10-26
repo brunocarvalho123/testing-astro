@@ -13,11 +13,12 @@ router.post('/', (req, res) => {
     const form = formidable({ multiples: false });
 
     form.parse(req, (err, fields, files) => {
-      const oldpath = files.image.path;
-      const newpath = './uploads/' + files.image.name;
+      console.log(JSON.stringify(fields));
+      const oldpath = files.file.path;
+      const newpath = './uploads/' + files.file.name;
       fs.rename(oldpath, newpath, function (err) {
         if (err) throw err;
-        res.status(200).json({ success: true, path: `/uploads/${files.image.name}` });
+        res.status(200).json({ success: true, path: `/uploads/${files.file.name}` });
       });
     });
   } catch (e) {

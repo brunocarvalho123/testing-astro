@@ -445,3 +445,6 @@ blockquote .source {
   display: flex;
   justify-content: center;
 }
+.dropzone-div:hover {
+  opacity: 0.5;
+}

@@ -4,6 +4,29 @@ const fs = require('fs');
 const global = require('../../common/global.js');
 const exec = require('child_process').exec;
 
+router.get('/:markdown_id', async (req, res) => {
+  try {
+    let markdownId = req.params.markdown_id.split('__');
+    if (markdownId.length !== 3) {
+      throw Error('Invalid request');
+    }
+
+    const mdFile = `./markdowns/${markdownId[0] + '/' + markdownId[1]}.md`;
+    const mdRaw = fs.readFileSync(mdFile, 'utf8');
+
+    let mdBody = mdRaw.split('\n---')[1];
+    mdBody = mdBody.match(new RegExp(`<div mdid="${markdownId[0] + '__' + markdownId[1]}" stripid="${markdownId[2]}" editable>\n\n((.|\n)*?)<\/div>`));
+    if (!mdBody || !mdBody[1]) {
+      throw Error('Unable to find requested strip');
+    }
+
+    res.status(200).json({ success: true, markdown: mdBody[1] });
+  } catch (e) {
+    console.log(e.message);
+    res.status(400).json({ msg: e.message });
+  }
+});
+
 router.patch('/:markdown_id', async (req, res) => {
   try {
     const mdFile = `./markdowns/${(req.params.markdown_id).replace('__','/')}.md`;
@@ -13,7 +36,7 @@ router.patch('/:markdown_id', async (req, res) => {
     let mdBody = mdRaw.split('\n---')[1];
 
     console.log(JSON.stringify(req.body.markdown));
-    mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}\n$3`);
+    mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}$3`);
 
     let mdFinal = mdHeader + '\n---' + (mdBody[0] !== '\n' ? '\n' : '' ) + mdBody;
 
