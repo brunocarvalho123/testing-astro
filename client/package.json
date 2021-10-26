@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "start": "astro --config config/backofiice-build.config.mjs dev",
+    "start": "astro --config config/backoffice-build.config.mjs dev",
     "build-public": "astro --config config/public-build.config.mjs build",
-    "build-backoffice": "astro --config config/backofiice-build.config.mjs build",
+    "build-backoffice": "astro --config config/backoffice-build.config.mjs build",
     "preview": "astro preview"
   },
   "devDependencies": {

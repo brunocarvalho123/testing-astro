@@ -6,11 +6,35 @@ document.getElementById('save-button').style.display = "block";
 document.getElementById('release-button').style.display = "block";
 
 document.addEventListener('click', (event) => {
+
+  // Check if we are clicking outside the editor
   let outsideEditor = true;
+  event.composedPath().forEach((e) => { if (e && e.dataset && e.dataset.hasmd === 'true') outsideEditor = false; });
+
+  // Close the editor if open and we are clicking outside it
+  if (editorOpen && outsideEditor) {
+    document.querySelectorAll('[editable]').forEach(element => {
+      if (element.dataset.hasmd === 'true') {
+        console.log('closing editor');
+
+        // Remove editor
+        element.removeChild(element.firstElementChild);
+
+        // Remove preview class
+        editor.preview.previewContent.classList.remove('toastui-editor-contents')
+
+        // Append new child
+        element.style = '';
+        element.appendChild(editor.preview.previewContent);
+        element.dataset.hasmd = 'false';
+        editorOpen = false;
+      }
+    });
+  }
+
+  // Open an editor if we click an editable element
   event.composedPath().forEach(async (element) => {
     try {
-      if (element.dataset.hasmd === 'true') outsideEditor = false;
-
       if (element.hasAttribute('editable') && element.dataset.hasmd !== 'true' && !editorOpen) {
 
         let markdown;
@@ -21,6 +45,7 @@ document.addEventListener('click', (event) => {
           } else {
             const url = `/markdowns/${element.getAttribute('editable').replace('__','/')}.md`;
             try {
+              // Request the raw markdown (unusable until we have components in the markdown)
               const response = await fetch(url);
               if (response.status === 200) {
                 markdown = await response.text();
@@ -48,33 +73,14 @@ document.addEventListener('click', (event) => {
         });
 
         element.dataset.hasmd = 'true';
-        outsideEditor = false;
         editorOpen = true;
       }
     } catch (error) {}
   });
 
-  if (editorOpen && outsideEditor) {
-    document.querySelectorAll('[editable]').forEach(element => {
-      if (element.getAttribute('editable') !== '' && element.dataset.hasmd) {
-        console.log('closing editor');
-
-        // Remove editor
-        element.removeChild(element.firstElementChild);
-
-        // Remove preview class
-        editor.preview.previewContent.classList.remove('toastui-editor-contents')
-
-        // Append new child
-        element.style = '';
-        element.appendChild(editor.preview.previewContent);
-        element.dataset.hasmd = 'false';
-        editorOpen = false;
-      }
-    });
-  }
 });
 
+// Change all contenteditable from false to true
 setTimeout(() => {
   document.querySelectorAll('[contenteditable]').forEach(element => {
     element.setAttribute('contenteditable','true');
