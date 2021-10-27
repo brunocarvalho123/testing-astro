@@ -410,8 +410,13 @@ blockquote .source {
 }
 
 .strip {
-  padding: 5vh 10vw 0vh 10vw;
+  margin: 5vh 10vw 0vh 10vw;
+  padding: 10px;
   display: flex;
+  position: relative;
+}
+.strip:hover {
+  outline: 2px solid var(--color-gray-600);
 }
 .img-right > * {
   width: 50%;
@@ -453,4 +458,16 @@ blockquote .source {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.strip-overlay {
+  width: 52px;
+  height: 52px;
+  position: absolute;
+  top: -26px;
+  right: -26px;
+  cursor: pointer;
+  display: none;
+}
+.strip-overlay > img {
+  width: 100%;
 }

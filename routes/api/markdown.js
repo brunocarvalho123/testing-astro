@@ -41,6 +41,9 @@ router.patch('/:markdown_id', async (req, res) => {
     } else if (req.body.stripid.includes('img-') && req.body.imgsrc !== undefined) {
       console.log(JSON.stringify(req.body.imgsrc));
       mdBody = mdBody.replace(new RegExp(`(<img mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editableimg src=").*?("><\/img>)`), `$1${req.body.imgsrc}$2`);
+    } else if (req.body.delete && req.body.stripid && req.body.stripid !== '1') {
+      mdBody = mdBody.replace(new RegExp(`<div stripid="${req.body.stripid}" class="strip((.|\n)*?(<div stripid=".*)|(.|\n)*<\/div>)`), `$3`);
+      mdBody = mdBody.replace(/\n+$/, '');
     } else {
       throw Error('Invalid request');
     }
@@ -129,6 +132,18 @@ Texto do artigo
     fs.writeFileSync(mdFile, mdFinal);
     res.status(200).json({ success: true });
   } catch (e) {
+    res.status(400).json({ msg: e.message });
+  }
+});
+
+router.delete('/:markdown_id', async (req, res) => {
+  try {
+    const mdFile = `./markdowns/${(req.params.markdown_id).replace('__','/')}.md`;
+    const unlinkResponse = fs.unlinkSync(mdFile);
+
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.log(e.message);
     res.status(400).json({ msg: e.message });
   }
 });

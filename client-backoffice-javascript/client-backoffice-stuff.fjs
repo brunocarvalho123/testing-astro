@@ -1,5 +1,6 @@
 var editorOpen = false;
 var editor = {};
+var deletedStrips = [];
 
 document.getElementById('new-article-button').style.display = "block";
 document.getElementById('save-button').style.display = "block";
@@ -86,32 +87,59 @@ setTimeout(() => {
   document.querySelectorAll('[contenteditable]').forEach(element => {
     element.setAttribute('contenteditable','true');
   });
+
+  setStripOverlay();
   setDropzones();
-}, 0);
+}, 50);
+
+function setStripOverlay () {
+  const stripOverlayClone = document.getElementById('strip-overlay').cloneNode(true);
+  stripOverlayClone.id = "strip-overlay-clone";
+  if (stripOverlayClone) {
+    document.querySelectorAll('.strip').forEach(element => {
+      element.addEventListener('mouseenter', (e) => {
+        stripOverlayClone.setAttribute('stripid', element.getAttribute('stripid'));
+        stripOverlayClone.style.display = 'block';
+        element.appendChild(stripOverlayClone);
+      });
+      element.addEventListener('mouseleave', (e) => {
+        stripOverlayClone.removeAttribute('stripid');
+        stripOverlayClone.style.display = 'none';
+        try {
+          element.removeChild(stripOverlayClone);
+        } catch (error) {}
+      });
+    });
+  }
+}
 
 function setDropzones () {
-  document.querySelectorAll('[editableimg]').forEach(element => { 
-    const myDropzone = new Dropzone(element, { url: "/api/upload/" });
+  document.querySelectorAll('[editableimg]').forEach(element => {
+    if (element.getAttribute('hasdropzone') !== 'true') {
+      const myDropzone = new Dropzone(element, { url: '/api/upload/' });
 
-    // myDropzone.on("sending", function(file, xhr, formData) {
-    //   formData.append("mdid", mdid);
-    //   formData.append("stripid", stripid);
-    // });
+      // myDropzone.on("sending", function(file, xhr, formData) {
+      //   formData.append("mdid", mdid);
+      //   formData.append("stripid", stripid);
+      // });
 
-    myDropzone.on("complete", function(file) {
-      const response = JSON.parse(file.xhr.response);
-      element.src = response.path;
-      element.setAttribute('imgchanged', "true");
-    });
-    element.classList.add('dropzone-elem');
+      myDropzone.on("complete", function(file) {
+        const response = JSON.parse(file.xhr.response);
+        element.src = response.path;
+        element.setAttribute('imgchanged', 'true');
+      });
 
-    element.addEventListener("dragenter", function(event) {
-      event.currentTarget.style.opacity = 0.5;
-    }, false);
+      element.setAttribute('hasdropzone', 'true');
+      element.classList.add('dropzone-elem');
 
-    element.addEventListener("dragleave", function(event) {
-      event.currentTarget.style.opacity = 1;
-    }, false);
+      element.addEventListener('dragenter', function(event) {
+        event.currentTarget.style.opacity = 0.5;
+      }, false);
+
+      element.addEventListener('dragleave', function(event) {
+        event.currentTarget.style.opacity = 1;
+      }, false);
+    }
   });
 }
 
@@ -191,6 +219,27 @@ async function save () {
     }
   }
 
+  for (let idx = 0; idx < deletedStrips.length; idx++) {
+    const mdid = document.querySelector('[mdid]').getAttribute('mdid');
+    const stripid = deletedStrips[idx];
+    if (mdid && stripid) {
+      try {
+        const patchResponse = await fetch(`/api/markdown/${mdid}`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(
+            {
+              stripid: stripid,
+              delete: true
+            })
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
   for (let idx = 0; idx < newStrips.length; idx++) {
     const element = newStrips[idx];
     const mdid = document.querySelector('[mdid]').getAttribute('mdid');
@@ -245,8 +294,22 @@ function addStrip (stripType='img-right') {
       break;
   }
   if (template) {
-    slotDiv.innerHTML += template;
+    slotDiv.appendChild(document.importNode(template.content,true));
+    setStripOverlay();
     setDropzones();
+  }
+}
+
+function deleteStrip () {
+  const stripOverlay = document.getElementById('strip-overlay-clone');
+  const stripid = stripOverlay.getAttribute('stripid');
+  if (stripid && stripid !== 'null') {
+    deletedStrips.push(stripid);
+    const stripElem = document.querySelector(`[stripid="${stripid}"]`); 
+    stripElem.parentNode.removeChild(stripElem);
+  } else {
+    const stripElem = stripOverlay.parentNode; 
+    stripElem.parentNode.removeChild(stripElem);
   }
 }
 
@@ -324,8 +387,8 @@ function hideFormOverlay () {
 }
 
 function imgRightStrip () {
-
-  return `<div newstrip="img-right" class="strip img-right">
+  let template = document.createElement('template');
+  template.innerHTML = `<div newstrip="img-right" class="strip img-right">
   <div editable>
 
     <h3>Titulo temporario</h3>
@@ -334,10 +397,11 @@ function imgRightStrip () {
   <img editableimg src="/placeholder.jpeg"></img>
 </div>
 `;
+  return template;
 }
 function imgLeftStrip () {
-
-  return `<div newstrip="img-left" class="strip img-left">
+  let template = document.createElement('template');
+  template.innerHTML =  `<div newstrip="img-left" class="strip img-left">
   <img editableimg src="/placeholder.jpeg"></img>
   <div editable>
 
@@ -346,10 +410,11 @@ function imgLeftStrip () {
   </div>
 </div>
 `;
+  return template;
 }
 function noImgStrip () {
-
-  return `<div newstrip="no-img" class="strip no-img">
+  let template = document.createElement('template');
+  template.innerHTML = `<div newstrip="no-img" class="strip no-img">
   <div editable>
 
     <h3>Titulo temporario</h3>
@@ -357,4 +422,5 @@ function noImgStrip () {
   </div>
 </div>
 `;
+  return template;
 }
