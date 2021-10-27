@@ -135,7 +135,7 @@ Texto do artigo
 
 const imgRightStrip = (mdid, stripid, mdcontent, imgsrc) => {
   return `
-<div stripid="${stripid}"t" class="strip img-right">
+<div stripid="${stripid}" class="strip img-right">
 <div mdid="${mdid}" stripid="md-${stripid}" editable>
 
 ${mdcontent}
@@ -146,7 +146,7 @@ ${mdcontent}
 }
 const imgLeftStrip = (mdid, stripid, mdcontent, imgsrc) => {
   return `
-<div stripid="${stripid}"" class="strip img-left">
+<div stripid="${stripid}" class="strip img-left">
 <img mdid="${mdid}" stripid="img-${stripid}" editableimg src="${imgsrc}"></img>
 <div mdid="${mdid}" stripid="md-${stripid}" editable>
 

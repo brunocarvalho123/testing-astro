@@ -196,10 +196,12 @@ async function save () {
     const mdid = document.querySelector('[mdid]').getAttribute('mdid');
     const mdelement = element.querySelector('[editable]');
     const imgelement = element.querySelector('[imgchanged]');
-    const imgsrc = imgelement.getAttribute('src');
 
     let img = '/placeholder.jpeg';
-    if (imgsrc !== '') img = imgsrc;
+    if (imgelement) {
+      const imgsrc = imgelement.getAttribute('src');
+      if (imgsrc !== '') img = imgsrc;
+    }
     
     if (mdelement.dataset.md && mdid) {
       try {
