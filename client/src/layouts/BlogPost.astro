@@ -20,7 +20,11 @@ const {title, description, publishDate, author, authorLink, heroImage, permalink
         <slot />
       </div>
     </BlogPost>
-    { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip()"><lit-icon icon="plus"></lit-icon></button></div> }
+    <div class="button-div">
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('img-left')"><lit-icon icon="plus"></lit-icon></button></div> }
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('img-right')"><lit-icon icon="plus"></lit-icon></button></div> }
+      { process.env.BUILD_MODE === 'backoffice' && <div class="add-strip"><button class="add-strip-button" onclick="addStrip('no-img')"><lit-icon icon="plus"></lit-icon></button></div> }
+    </div>
   </body>
 </html>
 

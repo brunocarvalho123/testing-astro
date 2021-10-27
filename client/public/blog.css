@@ -445,6 +445,12 @@ blockquote .source {
   display: flex;
   justify-content: center;
 }
-.dropzone-div:hover {
-  opacity: 0.5;
+.dropzone-elem:hover {
+  opacity: 0.5 !important;
+  cursor: pointer;
+}
+.button-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

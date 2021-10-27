@@ -35,8 +35,15 @@ router.patch('/:markdown_id', async (req, res) => {
     const mdHeader = mdRaw.split('\n---')[0];
     let mdBody = mdRaw.split('\n---')[1];
 
-    console.log(JSON.stringify(req.body.markdown));
-    mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}$3`);
+    if (req.body.stripid.includes('md-') && req.body.markdown !== undefined) {
+      console.log(JSON.stringify(req.body.markdown));
+      mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}$3`);
+    } else if (req.body.stripid.includes('img-') && req.body.imgsrc !== undefined) {
+      console.log(JSON.stringify(req.body.imgsrc));
+      mdBody = mdBody.replace(new RegExp(`(<img mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editableimg src=").*?("><\/img>)`), `$1${req.body.imgsrc}$2`);
+    } else {
+      throw Error('Invalid request');
+    }
 
     let mdFinal = mdHeader + '\n---' + (mdBody[0] !== '\n' ? '\n' : '' ) + mdBody;
 
@@ -133,14 +140,14 @@ const imgRightStrip = (mdid, stripid, mdcontent, imgsrc) => {
 
 ${mdcontent}
 </div>
-<img src="${imgsrc}"></img>
+<img mdid="${mdid}" stripid="img-${stripid}" editableimg src="${imgsrc}"></img>
 </div>
 `;
 }
 const imgLeftStrip = (mdid, stripid, mdcontent, imgsrc) => {
   return `
 <div stripid="${stripid}"" class="strip img-left">
-<img src="${imgsrc}"></img>
+<img mdid="${mdid}" stripid="img-${stripid}" editableimg src="${imgsrc}"></img>
 <div mdid="${mdid}" stripid="md-${stripid}" editable>
 
 ${mdcontent}

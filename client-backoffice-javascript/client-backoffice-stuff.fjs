@@ -91,23 +91,27 @@ setTimeout(() => {
 
 function setDropzones () {
   document.querySelectorAll('[editableimg]').forEach(element => { 
-    const hasdropzone = element.getAttribute("hasdropzone");
-    if (hasdropzone !== 'true') {
-      const myDropzone = new Dropzone(element, { url: "/api/upload/" });
+    const myDropzone = new Dropzone(element, { url: "/api/upload/" });
 
-      // myDropzone.on("sending", function(file, xhr, formData) {
-      //   formData.append("mdid", mdid);
-      //   formData.append("stripid", stripid);
-      // });
+    // myDropzone.on("sending", function(file, xhr, formData) {
+    //   formData.append("mdid", mdid);
+    //   formData.append("stripid", stripid);
+    // });
 
-      myDropzone.on("complete", function(file) {
-        const response = JSON.parse(file.xhr.response);
-        element.src = response.path;
-        element.setAttribute('imgchanged', "true");
-      });
-      element.classList.add('dropzone-div');
-      element.setAttribute('hasdropzone', "true");
-    }
+    myDropzone.on("complete", function(file) {
+      const response = JSON.parse(file.xhr.response);
+      element.src = response.path;
+      element.setAttribute('imgchanged', "true");
+    });
+    element.classList.add('dropzone-elem');
+
+    element.addEventListener("dragenter", function(event) {
+      event.currentTarget.style.opacity = 0.5;
+    }, false);
+
+    element.addEventListener("dragleave", function(event) {
+      event.currentTarget.style.opacity = 1;
+    }, false);
   });
 }
 
@@ -164,14 +168,38 @@ async function save () {
     }
   }
 
+  for (let idx = 0; idx < images.length; idx++) {
+    const element = images[idx];
+    const mdid = element.getAttribute('mdid');
+    const stripid = element.getAttribute('stripid');
+    const imgsrc = element.getAttribute('src');
+    if (mdid && stripid && imgsrc) {
+      try {
+        const patchResponse = await fetch(`/api/markdown/${mdid}`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(
+            {
+              stripid: stripid,
+              imgsrc: imgsrc
+            })
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
   for (let idx = 0; idx < newStrips.length; idx++) {
     const element = newStrips[idx];
     const mdid = document.querySelector('[mdid]').getAttribute('mdid');
     const mdelement = element.querySelector('[editable]');
     const imgelement = element.querySelector('[imgchanged]');
+    const imgsrc = imgelement.getAttribute('src');
 
-    let img = '/social.jpg';
-    if (imgelement.src !== '') img = imgelement.src;
+    let img = '/placeholder.jpeg';
+    if (imgsrc !== '') img = imgsrc;
     
     if (mdelement.dataset.md && mdid) {
       try {
@@ -301,14 +329,14 @@ function imgRightStrip () {
     <h3>Titulo temporario</h3>
     <p>Descrição temporaria</p>
   </div>
-  <img editableimg src="/social.jpg"></img>
+  <img editableimg src="/placeholder.jpeg"></img>
 </div>
 `;
 }
 function imgLeftStrip () {
 
   return `<div newstrip="img-left" class="strip img-left">
-  <img editableimg src="/social.jpg"></img>
+  <img editableimg src="/placeholder.jpeg"></img>
   <div editable>
 
     <h3>Titulo temporario</h3>
