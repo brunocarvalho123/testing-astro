@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "start-bo": "node server.js backoffice",
+    "start-bo-debug": "node --inspect server.js backoffice",
     "start-public": "node server.js public",
     "server": "node server.js",
     "install-client": "cd client && npm install",
@@ -14,6 +15,7 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "formidable": "^1.2.2"
+    "formidable": "^1.2.2",
+    "nanoid": "^3.1.30"
   }
 }

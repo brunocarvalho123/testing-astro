@@ -36,12 +36,16 @@ router.patch('/:markdown_id', async (req, res) => {
     let mdBody = mdRaw.split('\n---')[1];
 
     if (req.body.stripid.includes('md-') && req.body.markdown !== undefined) {
-      console.log(JSON.stringify(req.body.markdown));
+      // Markdown editing
       mdBody = mdBody.replace(new RegExp(`(<div mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editable>\n\n)(.|\n)*?(<\/div>)`), `$1${req.body.markdown}$3`);
     } else if (req.body.stripid.includes('img-') && req.body.imgsrc !== undefined) {
-      console.log(JSON.stringify(req.body.imgsrc));
-      mdBody = mdBody.replace(new RegExp(`(<img mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editableimg src=").*?("><\/img>)`), `$1${req.body.imgsrc}$2`);
+      // Img editing (move image to permanent dir)
+      const tmpImgPath = `.${req.body.imgsrc}`;
+      const finalImgPath = `.${req.body.imgsrc.replace('/tmp','')}`;
+      fs.rename(tmpImgPath, finalImgPath, function (err) {});
+      mdBody = mdBody.replace(new RegExp(`(<img mdid="${req.params.markdown_id}" stripid="${req.body.stripid}" editableimg src=").*?("><\/img>)`), `$1${req.body.imgsrc.replace('/tmp','')}$2`);
     } else if (req.body.delete && req.body.stripid && req.body.stripid !== '1') {
+      // Strip removal
       mdBody = mdBody.replace(new RegExp(`<div stripid="${req.body.stripid}" class="strip((.|\n)*?(<div stripid=".*)|(.|\n)*<\/div>)`), `$3`);
       mdBody = mdBody.replace(/\n+$/, '');
     } else {

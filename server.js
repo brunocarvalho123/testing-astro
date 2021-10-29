@@ -6,6 +6,7 @@ const properties = require("./routes/api/properties");
 const markdown = require("./routes/api/markdown");
 const release = require("./routes/api/release");
 const upload = require("./routes/api/upload");
+const pages = require("./routes/api/pages");
 
 const app = express();
 
@@ -27,6 +28,7 @@ if (process.argv[2] === 'backoffice') {
   clientMode = 'dist-bo';
 
   // Set API routes for backoffice only
+  app.use('/api/pages', pages);
   app.use('/api/upload', upload);
   app.use('/api/release', release);
   app.use('/api/markdown', markdown);

@@ -335,6 +335,21 @@ async function releasePublic () {
   }
 }
 
+async function getPages () {
+  try {
+    let pagesResponse = await fetch('/api/pages/', {method: 'GET'});
+    if (pagesResponse.status === 200) {
+      pagesResponse = JSON.parse(await pagesResponse.text());
+      if (pagesResponse.success) {
+        console.log(pagesResponse.pages);
+        return pagesResponse.pages;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function creatArticle () {
   hideFormOverlay();
 

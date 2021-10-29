@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const formidable = require('formidable');
-
+const { nanoid } = require('nanoid');
 
 /**
  * @route   GET api/upload/
@@ -15,10 +15,26 @@ router.post('/', (req, res) => {
     form.parse(req, (err, fields, files) => {
       console.log(JSON.stringify(fields));
       const oldpath = files.file.path;
-      const newpath = './uploads/' + files.file.name;
+      let uuid = nanoid(8);
+      switch (files.file.type) {
+        case 'image/png':
+          uuid += '.png';
+          break;
+        case 'image/jpeg':
+          uuid += '.jpg';
+          break;
+        case 'image/gif':
+          uuid += '.gif';
+          break;
+        default:
+          throw Error('Inavalid or unsupported type');
+          break;
+      }
+
+      const newpath = './uploads/tmp/' + uuid;
       fs.rename(oldpath, newpath, function (err) {
         if (err) throw err;
-        res.status(200).json({ success: true, path: `/uploads/${files.file.name}` });
+        res.status(200).json({ success: true, path: `/uploads/tmp/${uuid}` });
       });
     });
   } catch (e) {
